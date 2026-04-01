@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sticky Expanded State – k24 Preview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f5f5;
+  }
+
+  /* ── MOCK PAGE ── */
+  .mock-header {
+    background: #1a1f5e;
+    color: white;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .mock-header .logo {
+    font-size: 22px;
+    font-weight: 900;
+    color: #FF6B00;
+    letter-spacing: -1px;
+  }
+  .mock-header .logo span { color: white; }
+  .mock-header input {
+    flex: 1;
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    font-size: 14px;
+    max-width: 400px;
+  }
+  .mock-header button {
+    background: #FF6B00;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 4px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .mock-nav {
+    background: #252b77;
+    padding: 10px 24px;
+    display: flex;
+    gap: 24px;
+  }
+  .mock-nav a {
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    font-size: 13px;
+  }
+  .mock-content {
+    padding: 40px 24px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .mock-content h2 {
+    font-size: 20px;
+    color: #1a1f5e;
+    margin-bottom: 16px;
+  }
+  .mock-banner {
+    background: linear-gradient(135deg, #1a1f5e, #252b77);
+    border-radius: 12px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 32px;
+    font-weight: 900;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .mock-banner::after {
+    content: '';
+    position: absolute;
+    right: -40px;
+    top: -40px;
+    width: 200px;
+    height: 200px;
+    background: rgba(255,107,0,0.2);
+    border-radius: 50%;
+  }
+  .mock-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .mock-card {
+    background: white;
+    border-radius: 8px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ccc;
+    font-size: 13px;
+    border: 1px solid #e8e8e8;
+  }
+
+  /* ── CONTROL PANEL ── */
+  .control-panel {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    width: 260px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+    z-index: 9999;
+    border: 1px solid #e8e8e8;
+  }
+  .control-panel h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1f5e;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .control-group {
+    margin-bottom: 14px;
+  }
+  .control-group label {
+    display: block;
+    font-size: 11px;
+    color: #666;
+    margin-bottom: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .control-group select, .control-group input[type="range"] {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #333;
+    background: white;
+  }
+  .range-val {
+    font-size: 11px;
+    color: #FF6B00;
+    font-weight: 700;
+    text-align: right;
+    margin-top: 3px;
+  }
+  .btn-group {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .btn-trigger {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-trigger.primary { background: #1a1f5e; color: white; }
+  .btn-trigger.secondary { background: #f0f0f0; color: #333; }
+  .btn-trigger:hover { opacity: 0.85; }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #f0f0f0;
+    margin: 14px 0;
+  }
+
+  .metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .metric span { font-size: 11px; color: #888; }
+  .metric strong { font-size: 12px; color: #1a1f5e; }
+  .metric .badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 20px;
+    font-weight: 700;
+  }
+  .badge.green { background: #e6f9f0; color: #00a854; }
+  .badge.orange { background: #fff3e6; color: #FF6B00; }
+  .badge.red { background: #ffe6e6; color: #e63946; }
+
+  /* ── STICKY WIDGET ── */
+  #sticky-widget {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  /* Collapsed bubble */
+  #sticky-bubble {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #FF6B00;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(255,107,0,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.2;
+    gap: 2px;
+  }
+  #sticky-bubble:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 20px rgba(255,107,0,0.5);
+  }
+  #sticky-bubble svg {
+    width: 22px;
+    height: 22px;
+    fill: white;
+  }
+  #sticky-bubble.pulse {
+    animation: pulse 1.2s ease-in-out 3;
+  }
+  @keyframes pulse {
+    0%   { box-shadow: 0 4px 16px rgba(255,107,0,0.4); transform: scale(1); }
+    50%  { box-shadow: 0 4px 32px rgba(255,107,0,0.7); transform: scale(1.12); }
+    100% { box-shadow: 0 4px 16px rgba(255,107,0,0.4); transform: scale(1); }
+  }
+
+  /* Notification dot */
+  #sticky-bubble .dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 10px;
+    height: 10px;
+    background: #00d97e;
+    border-radius: 50%;
+    border: 2px solid white;
+    animation: blink 2s infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* Expanded card */
+  #sticky-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    width: 300px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    margin-bottom: 12px;
+    transform-origin: bottom right;
+    animation: expandIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: none;
+    border: 1px solid #f0f0f0;
+  }
+  @keyframes expandIn {
+    from { transform: scale(0.6) translateY(20px); opacity: 0; }
+    to   { transform: scale(1) translateY(0); opacity: 1; }
+  }
+  #sticky-card.visible {
+    display: block;
+  }
+  #sticky-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  #sticky-card .card-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #1a1f5e;
+    line-height: 1.3;
+  }
+  #sticky-card .card-title span {
+    color: #FF6B00;
+  }
+  #sticky-card .close-btn {
+    background: #f5f5f5;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-size: 14px;
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  #sticky-card .close-btn:hover { background: #e8e8e8; color: #333; }
+
+  #sticky-card .card-sub {
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  #sticky-card .card-badge {
+    background: #fff3e6;
+    color: #FF6B00;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  #sticky-card input[type="email"] {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 8px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  #sticky-card input[type="email"]:focus {
+    border-color: #FF6B00;
+  }
+  #sticky-card .cta-btn {
+    width: 100%;
+    padding: 11px;
+    background: #FF6B00;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  #sticky-card .cta-btn:hover { background: #e55f00; }
+  #sticky-card .cta-btn:active { transform: scale(0.98); }
+  #sticky-card .card-legal {
+    font-size: 9px;
+    color: #bbb;
+    text-align: center;
+    margin-top: 8px;
+    line-height: 1.4;
+  }
+
+  /* Success state */
+  #sticky-success {
+    display: none;
+    text-align: center;
+    padding: 8px 0;
+  }
+  #sticky-success .check {
+    width: 48px;
+    height: 48px;
+    background: #e6f9f0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    font-size: 22px;
+  }
+  #sticky-success h4 {
+    font-size: 14px;
+    font-weight: 800;
+    color: #1a1f5e;
+    margin-bottom: 6px;
+  }
+  #sticky-success p {
+    font-size: 11px;
+    color: #888;
+    line-height: 1.5;
+  }
+
+  /* Scroll progress bar */
+  #scroll-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: #FF6B00;
+    width: 0%;
+    z-index: 99999;
+    transition: width 0.1s;
+  }
+
+  /* State timeline */
+  .timeline {
+    margin-top: 12px;
+  }
+  .timeline-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    color: #888;
+  }
+  .timeline-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ddd;
+    flex-shrink: 0;
+  }
+  .timeline-dot.active { background: #FF6B00; }
+  .timeline-dot.done { background: #00d97e; }
+
+  /* Info box */
+  .info-box {
+    background: #f0f3ff;
+    border-left: 3px solid #1a1f5e;
+    padding: 10px 12px;
+    border-radius: 0 6px 6px 0;
+    font-size: 11px;
+    color: #444;
+    line-height: 1.5;
+    margin-top: 12px;
+  }
+  .info-box strong { color: #1a1f5e; }
+</style>
+</head>
+<body>
+
+<div id="scroll-progress-bar"></div>
+
+<!-- MOCK PAGE -->
+<div class="mock-header">
+  <div class="logo">kfz<span>teile</span>24</div>
+  <input type="text" placeholder="Artikel-Nr. oder Teilenamen eingeben">
+  <button>Suchen</button>
+</div>
+<div class="mock-nav">
+  <a href="#">Pkw-Teile</a>
+  <a href="#">Lkw-Teile</a>
+  <a href="#">Reifen</a>
+  <a href="#">Felgen</a>
+  <a href="#">Werkzeuge</a>
+  <a href="#">Motoröl</a>
+</div>
+<div class="mock-content">
+  <div class="mock-banner">Bis zu -22% auf Reifen & Zubehör 🔧</div>
+  <h2>Kategorien</h2>
+  <div class="mock-cards">
+    <div class="mock-card">Bremsanlage</div>
+    <div class="mock-card">Motor & Teile</div>
+    <div class="mock-card">Elektrik</div>
+    <div class="mock-card">Filter</div>
+    <div class="mock-card">Auspuffanlage</div>
+    <div class="mock-card">Achsaufhängung</div>
+  </div>
+  <h2 style="margin-bottom:16px">Aktuelle Angebote</h2>
+  <div class="mock-cards">
+    <div class="mock-card">Bosch Zündkerzen</div>
+    <div class="mock-card">Continental Riemen</div>
+    <div class="mock-card">Febi Bilstein</div>
+  </div>
+  <div class="mock-cards">
+    <div class="mock-card">NGK Sensoren</div>
+    <div class="mock-card">ATE Bremsscheiben</div>
+    <div class="mock-card">Mann Filter</div>
+  </div>
+  <div class="mock-cards">
+    <div class="mock-card">Valeo Kupplungen</div>
+    <div class="mock-card">Hella Scheinwerfer</div>
+    <div class="mock-card">SKF Lager</div>
+  </div>
+  <div class="mock-cards">
+    <div class="mock-card">Gates Riemensätze</div>
+    <div class="mock-card">Brembo Bremsen</div>
+    <div class="mock-card">Denso Zündung</div>
+  </div>
+</div>
+
+<!-- CONTROL PANEL -->
+<div class="control-panel">
+  <h3>🧪 Test Controls</h3>
+
+  <div class="control-group">
+    <label>Trigger-Mechanismus</label>
+    <select id="trigger-select" onchange="updateTrigger()">
+      <option value="scroll">Scroll-Tiefe (empfohlen)</option>
+      <option value="time">Zeit-Delay</option>
+      <option value="exit">Exit-Intent</option>
+      <option value="manual">Manuell</option>
+    </select>
+  </div>
+
+  <div class="control-group" id="scroll-control">
+    <label>Scroll-Tiefe Trigger</label>
+    <input type="range" id="scroll-threshold" min="10" max="90" value="50" oninput="updateScrollLabel()">
+    <div class="range-val" id="scroll-label">50% Scroll-Tiefe</div>
+  </div>
+
+  <div class="control-group" id="time-control" style="display:none">
+    <label>Zeit-Delay (Sekunden)</label>
+    <input type="range" id="time-threshold" min="5" max="60" value="30" oninput="updateTimeLabel()">
+    <div class="range-val" id="time-label">30 Sekunden</div>
+  </div>
+
+  <div class="btn-group">
+    <button class="btn-trigger primary" onclick="triggerExpand()">▶ Expand testen</button>
+    <button class="btn-trigger secondary" onclick="resetWidget()">↺ Reset</button>
+  </div>
+
+  <hr class="divider">
+
+  <div class="control-group">
+    <label>Value Proposition</label>
+    <select id="value-prop" onchange="updateValueProp()">
+      <option value="10">10% Rabatt auf erste Bestellung</option>
+      <option value="5euro">5€ Gutschein sichern</option>
+      <option value="free">Gratis Versand ab 50€</option>
+      <option value="exclusive">Exklusive Angebote zuerst</option>
+    </select>
+  </div>
+
+  <hr class="divider">
+
+  <h3>📊 Live Metriken</h3>
+
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-dot done" id="dot-load"></div>
+      <span>Page loaded → Icon eingeblendet</span>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" id="dot-pulse"></div>
+      <span id="label-pulse">Warte auf Trigger...</span>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" id="dot-expand"></div>
+      <span>Card expandiert</span>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" id="dot-convert"></div>
+      <span>Nutzer konvertiert</span>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="metric">
+    <span>Scroll Position</span>
+    <strong id="scroll-pos-display">0%</strong>
+  </div>
+  <div class="metric">
+    <span>Widget Status</span>
+    <strong id="widget-status">Collapsed</strong>
+  </div>
+  <div class="metric">
+    <span>Erwartete CTR</span>
+    <span class="badge green" id="ctr-badge">~1,0–1,4%</span>
+  </div>
+
+  <div class="info-box">
+    <strong>Aktuell im Test:</strong> Scroll 50% Trigger.<br>
+    Scroll nach unten um den Expanded State live zu erleben oder nutze die Controls.
+  </div>
+</div>
+
+<!-- STICKY WIDGET -->
+<div id="sticky-widget">
+  <div id="sticky-card">
+    <div class="card-header">
+      <div class="card-title" id="card-title">Sichere dir <span>10% Rabatt</span><br>auf deine erste Bestellung</div>
+      <button class="close-btn" onclick="closeCard()">✕</button>
+    </div>
+    <div class="card-badge" id="card-badge">⚡ Exklusiv für Newsletter-Abonnenten</div>
+    <div class="card-sub" id="card-sub">Trag dich jetzt ein und erhalte sofort deinen persönlichen Rabattcode per E-Mail.</div>
+
+    <div id="form-state">
+      <input type="email" id="email-input" placeholder="deine@email.de">
+      <button class="cta-btn" onclick="handleConvert()">Jetzt 10% sichern →</button>
+      <div class="card-legal">Mit Klick auf den Button stimmst du dem Erhalt unseres Newsletters zu. Abmeldung jederzeit möglich. <a href="#" style="color:#bbb">Datenschutz</a></div>
+    </div>
+
+    <div id="sticky-success">
+      <div class="check">✅</div>
+      <h4>Fast geschafft!</h4>
+      <p>Bitte bestätige deine Anmeldung per E-Mail.<br>Dein 10%-Code wartet auf dich.</p>
+    </div>
+  </div>
+
+  <div id="sticky-bubble" onclick="toggleCard()">
+    <div class="dot"></div>
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+    </svg>
+    <span>10% sichern</span>
+  </div>
+</div>
+
+<script>
+  let cardVisible = false;
+  let triggered = false;
+  let currentTrigger = 'scroll';
+  let timeTimer = null;
+  let autoCloseTimer = null;
+
+  const valuePropData = {
+    '10': {
+      title: 'Sichere dir <span>10% Rabatt</span><br>auf deine erste Bestellung',
+      badge: '⚡ Exklusiv für Newsletter-Abonnenten',
+      sub: 'Trag dich jetzt ein und erhalte sofort deinen persönlichen Rabattcode per E-Mail.',
+      cta: 'Jetzt 10% sichern →',
+      bubbleText: '10% sichern'
+    },
+    '5euro': {
+      title: 'Erhalte <span>5€ Gutschein</span><br>für deine nächste Bestellung',
+      badge: '🎁 Nur für neue Abonnenten',
+      sub: 'Melde dich an und erhalte deinen 5€ Gutscheincode sofort per E-Mail.',
+      cta: 'Jetzt 5€ sichern →',
+      bubbleText: '5€ sichern'
+    },
+    'free': {
+      title: '<span>Gratis Versand</span><br>ab 50€ Bestellwert sichern',
+      badge: '🚚 Versandkostenfrei einkaufen',
+      sub: 'Newsletter abonnieren und nie wieder Versandkosten zahlen – ab 50€ Bestellwert.',
+      cta: 'Gratis Versand sichern →',
+      bubbleText: 'Gratis Versand'
+    },
+    'exclusive': {
+      title: '<span>Exklusive Deals</span><br>als Erster entdecken',
+      badge: '🔥 Nur für Newsletter-Abonnenten',
+      sub: 'Erhalte Angebote und Rabattaktionen vor allen anderen direkt in dein Postfach.',
+      cta: 'Jetzt anmelden →',
+      bubbleText: 'Deals sichern'
+    }
+  };
+
+  function updateValueProp() {
+    const val = document.getElementById('value-prop').value;
+    const data = valuePropData[val];
+    document.getElementById('card-title').innerHTML = data.title;
+    document.getElementById('card-badge').innerHTML = data.badge;
+    document.getElementById('card-sub').innerHTML = data.sub;
+    document.querySelector('.cta-btn').innerHTML = data.cta;
+    document.querySelector('#sticky-bubble span').innerHTML = data.bubbleText;
+  }
+
+  function updateTrigger() {
+    currentTrigger = document.getElementById('trigger-select').value;
+    document.getElementById('scroll-control').style.display = currentTrigger === 'scroll' ? 'block' : 'none';
+    document.getElementById('time-control').style.display = currentTrigger === 'time' ? 'block' : 'none';
+
+    resetWidget();
+
+    if (currentTrigger === 'time') {
+      const delay = parseInt(document.getElementById('time-threshold').value) * 1000;
+      document.getElementById('label-pulse').textContent = `Nach ${delay/1000}s → Pulse & Expand`;
+      document.getElementById('ctr-badge').textContent = '~0,8–1,1%';
+      timeTimer = setTimeout(() => { pulseThenExpand(); }, delay);
+    } else if (currentTrigger === 'exit') {
+      document.getElementById('label-pulse').textContent = 'Exit-Intent erkannt → Expand';
+      document.getElementById('ctr-badge').textContent = '~0,6–0,9%';
+      document.addEventListener('mouseleave', exitHandler);
+    } else if (currentTrigger === 'scroll') {
+      document.getElementById('label-pulse').textContent = `Scroll ${document.getElementById('scroll-threshold').value}% → Pulse & Expand`;
+      document.getElementById('ctr-badge').textContent = '~1,0–1,4%';
+    } else {
+      document.getElementById('label-pulse').textContent = 'Manueller Trigger';
+      document.getElementById('ctr-badge').textContent = '–';
+    }
+  }
+
+  function exitHandler(e) {
+    if (e.clientY <= 5 && !triggered) {
+      pulseThenExpand();
+      document.removeEventListener('mouseleave', exitHandler);
+    }
+  }
+
+  function updateScrollLabel() {
+    const val = document.getElementById('scroll-threshold').value;
+    document.getElementById('scroll-label').textContent = `${val}% Scroll-Tiefe`;
+    document.getElementById('label-pulse').textContent = `Scroll ${val}% → Pulse & Expand`;
+  }
+
+  function updateTimeLabel() {
+    const val = document.getElementById('time-threshold').value;
+    document.getElementById('time-label').textContent = `${val} Sekunden`;
+    document.getElementById('label-pulse').textContent = `Nach ${val}s → Pulse & Expand`;
+  }
+
+  // Scroll tracking
+  window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.body.scrollHeight - window.innerHeight;
+    const scrollPct = Math.round((scrollTop / docHeight) * 100);
+
+    document.getElementById('scroll-progress-bar').style.width = scrollPct + '%';
+    document.getElementById('scroll-pos-display').textContent = scrollPct + '%';
+
+    if (currentTrigger === 'scroll' && !triggered) {
+      const threshold = parseInt(document.getElementById('scroll-threshold').value);
+      if (scrollPct >= threshold) {
+        pulseThenExpand();
+      }
+    }
+  });
+
+  function pulseThenExpand() {
+    if (triggered) return;
+    triggered = true;
+
+    // Pulse animation
+    const bubble = document.getElementById('sticky-bubble');
+    bubble.classList.add('pulse');
+    document.getElementById('dot-pulse').classList.add('active');
+
+    setTimeout(() => {
+      bubble.classList.remove('pulse');
+      showCard();
+    }, 1500);
+
+    // Auto-close after 8s if no interaction
+    autoCloseTimer = setTimeout(() => {
+      if (cardVisible) closeCard();
+    }, 9500);
+  }
+
+  function showCard() {
+    const card = document.getElementById('sticky-card');
+    card.classList.add('visible');
+    cardVisible = true;
+
+    document.getElementById('dot-pulse').classList.remove('active');
+    document.getElementById('dot-pulse').classList.add('done');
+    document.getElementById('dot-expand').classList.add('active');
+    document.getElementById('widget-status').textContent = 'Expanded';
+  }
+
+  function toggleCard() {
+    if (cardVisible) {
+      closeCard();
+    } else {
+      clearTimeout(autoCloseTimer);
+      triggered = true;
+      showCard();
+    }
+  }
+
+  function closeCard() {
+    const card = document.getElementById('sticky-card');
+    card.classList.remove('visible');
+    cardVisible = false;
+    clearTimeout(autoCloseTimer);
+    document.getElementById('widget-status').textContent = 'Closed';
+
+    if (document.getElementById('dot-expand').classList.contains('active')) {
+      document.getElementById('dot-expand').classList.remove('active');
+    }
+  }
+
+  function handleConvert() {
+    const email = document.getElementById('email-input').value;
+    if (!email || !email.includes('@')) {
+      document.getElementById('email-input').style.borderColor = '#e63946';
+      document.getElementById('email-input').focus();
+      return;
+    }
+    document.getElementById('email-input').style.borderColor = '#00d97e';
+    document.getElementById('form-state').style.display = 'none';
+    document.getElementById('sticky-success').style.display = 'block';
+
+    document.getElementById('dot-expand').classList.remove('active');
+    document.getElementById('dot-expand').classList.add('done');
+    document.getElementById('dot-convert').classList.add('done');
+    document.getElementById('widget-status').textContent = '✅ Converted';
+  }
+
+  function triggerExpand() {
+    if (cardVisible) return;
+    triggered = false;
+    pulseThenExpand();
+  }
+
+  function resetWidget() {
+    clearTimeout(timeTimer);
+    clearTimeout(autoCloseTimer);
+    triggered = false;
+    cardVisible = false;
+
+    document.getElementById('sticky-card').classList.remove('visible');
+    document.getElementById('sticky-bubble').classList.remove('pulse');
+    document.getElementById('form-state').style.display = 'block';
+    document.getElementById('sticky-success').style.display = 'none';
+    document.getElementById('email-input').value = '';
+    document.getElementById('email-input').style.borderColor = '#e0e0e0';
+    document.getElementById('widget-status').textContent = 'Collapsed';
+
+    ['dot-pulse','dot-expand','dot-convert'].forEach(id => {
+      document.getElementById(id).classList.remove('active','done');
+    });
+
+    document.removeEventListener('mouseleave', exitHandler);
+  }
+
+  // Init
+  updateTrigger();
+</script>
+</body>
+</html>
