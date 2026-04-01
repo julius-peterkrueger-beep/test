@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>kfz24 Attribution Modell – UTM Flow</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #0f1117; color: #fff; padding: 30px; }
+
+  h1 { text-align: center; font-size: 22px; color: #fff; margin-bottom: 6px; }
+  .subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 36px; }
+
+  .section-title {
+    font-size: 13px; font-weight: 700; letter-spacing: 1px;
+    color: #aaa; text-transform: uppercase; margin-bottom: 16px; margin-top: 32px;
+  }
+
+  .flow { display: flex; align-items: flex-start; gap: 0; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; }
+
+  .channel-col { display: flex; flex-direction: column; gap: 10px; min-width: 160px; }
+
+  .card {
+    border-radius: 10px; padding: 12px 14px; font-size: 12px; line-height: 1.6;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .card-title { font-weight: 700; font-size: 13px; margin-bottom: 6px; }
+  .card.crm   { background: #1a2e4a; border-color: #2a5298; }
+  .card.paid  { background: #2a1a00; border-color: #E8730A; }
+  .card.deep  { background: #1e1a3a; border-color: #7B68EE; }
+  .card.param { background: #111827; border-color: #374151; font-family: monospace; font-size: 11px; color: #93c5fd; }
+
+  .arrow {
+    display: flex; align-items: center; padding: 0 8px; color: #555;
+    font-size: 22px; padding-top: 14px; min-width: 28px;
+  }
+
+  .merge-box {
+    background: #1a1a2e; border: 1px solid #4f46e5; border-radius: 10px;
+    padding: 14px 18px; min-width: 160px; font-size: 12px; line-height: 1.7;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .merge-box .card-title { color: #818cf8; }
+
+  .tableau-box {
+    background: #052e16; border: 1px solid #16a34a; border-radius: 10px;
+    padding: 14px 18px; min-width: 160px; font-size: 12px; line-height: 1.7;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .tableau-box .card-title { color: #4ade80; font-size: 14px; }
+
+  .flow2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 8px; }
+
+  .scenario { border-radius: 12px; padding: 20px; border: 1px solid; }
+  .scenario.bad  { background: #1c0a0a; border-color: #c62828; }
+  .scenario.good { background: #071c0f; border-color: #16a34a; }
+
+  .scenario-title { font-size: 13px; font-weight: 700; margin-bottom: 14px; }
+  .scenario.bad  .scenario-title { color: #ef4444; }
+  .scenario.good .scenario-title { color: #4ade80; }
+
+  .step {
+    border-radius: 8px; padding: 10px 12px; margin-bottom: 10px;
+    font-size: 12px; line-height: 1.6; position: relative;
+  }
+  .step-arrow { text-align: center; color: #555; font-size: 16px; margin-bottom: 6px; }
+
+  .step.neutral { background: #1f2937; border: 1px solid #374151; }
+  .step.red     { background: #2d0a0a; border: 1px solid #c62828; color: #fca5a5; }
+  .step.green   { background: #0a2d14; border: 1px solid #16a34a; color: #86efac; }
+  .step.teal    { background: #0a2d2d; border: 1px solid #0d9488; color: #99f6e4; }
+
+  .label { font-weight: 700; display: block; margin-bottom: 3px; }
+
+  .param-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12px; }
+  .param-table th {
+    background: #1f2937; padding: 10px 14px; text-align: left;
+    color: #9ca3af; font-weight: 600; border-bottom: 1px solid #374151;
+  }
+  .param-table td { padding: 10px 14px; border-bottom: 1px solid #1f2937; }
+  .param-table tr:last-child td { border-bottom: none; }
+  .param-table tr:hover td { background: #111827; }
+  .mono { font-family: monospace; color: #93c5fd; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; }
+  .tag.crm  { background: #1e3a5f; color: #60a5fa; }
+  .tag.paid { background: #3d1f00; color: #fb923c; }
+  .tag.new  { background: #134e2a; color: #4ade80; }
+
+  .divider { border: none; border-top: 1px solid #1f2937; margin: 40px 0; }
+</style>
+</head>
+<body>
+
+<h1>🚗 kfzteile24 – UTM Attribution Modell</h1>
+<p class="subtitle">CRM & Performance Marketing | Stand: April 2026</p>
+
+<div class="section-title">① Standard UTM Flow – alle Kanäle</div>
+
+<div class="flow">
+  <div class="channel-col">
+    <div class="card crm"><div class="card-title">📧 E-Mail</div>Bloomreach / CRM</div>
+    <div class="card crm"><div class="card-title">🔔 App Push</div>Bloomreach / CRM</div>
+    <div class="card deep"><div class="card-title">🔗 Deep Link</div>Organisch / App</div>
+    <div class="card paid"><div class="card-title">💰 Google Ads</div>Performance Mkt.</div>
+  </div>
+
+  <div class="arrow">→</div>
+
+  <div class="channel-col">
+    <div class="card param">source=<b>bloomreach</b><br>medium=<b>email</b><br>campaign=name_YYYYMMDD<br>content=cta-label</div>
+    <div class="card param">source=<b>bloomreach</b><br>medium=<b>push</b><br>campaign=name_YYYYMMDD<br>content=push-titel</div>
+    <div class="card param">source=<b>deeplink</b><br>medium=<b>organic_app</b><br>campaign=flow-name<br>content=screen</div>
+    <div class="card param">source=<b>google</b><br>medium=<b>cpc</b><br>campaign=name<br>term=keyword</div>
+  </div>
+
+  <div class="arrow">→</div>
+
+  <div class="channel-col" style="justify-content:center;">
+    <div class="merge-box" style="margin-top:44px;">
+      <div class="card-title">🌐 App / Landingpage</div>
+      Session startet<br>UTMs werden<br>gespeichert
+    </div>
+  </div>
+
+  <div class="arrow">→</div>
+
+  <div class="channel-col" style="justify-content:center;">
+    <div class="tableau-box" style="margin-top:44px;">
+      <div class="card-title">📊 Tableau</div>
+      Zuordnung via<br>
+      <span style="font-family:monospace;color:#93c5fd">utm_source</span><br>
+      <span style="font-family:monospace;color:#93c5fd">utm_medium</span>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="section-title">② In-App Message – Problem &amp; Lösung</div>
+
+<div class="flow2">
+  <div class="scenario bad">
+    <div class="scenario-title">❌ Altes Verhalten – UTM Konflikt</div>
+    <div class="step neutral"><span class="label">Nutzer klickt Google Ad</span>utm_source=google | utm_medium=cpc</div>
+    <div class="step-arrow">↓</div>
+    <div class="step neutral"><span class="label">App öffnet sich</span>Session läuft mit Google UTMs</div>
+    <div class="step-arrow">↓</div>
+    <div class="step red"><span class="label">⚠️ In-App Message feuert</span>Setzt NEUE UTMs:<br>utm_source=bloomreach<br>utm_medium=inapp<br>→ <b>ÜBERSCHREIBT Google UTMs!</b></div>
+    <div class="step-arrow">↓</div>
+    <div class="step red"><span class="label">❌ Tableau Ergebnis</span>Paid-Traffic fälschlich als<br>CRM/InApp gezählt → Falsche Attribution!</div>
+  </div>
+
+  <div class="scenario good">
+    <div class="scenario-title">✅ Neue Lösung – Separater Parameter</div>
+    <div class="step neutral"><span class="label">Nutzer klickt Google Ad</span>utm_source=google | utm_medium=cpc</div>
+    <div class="step-arrow">↓</div>
+    <div class="step neutral"><span class="label">App öffnet sich</span>Session läuft mit Google UTMs</div>
+    <div class="step-arrow">↓</div>
+    <div class="step green"><span class="label">✅ In-App Message feuert</span>Setzt NUR Zusatzparameter:<br><span style="font-family:monospace">banner=inapp_[kampagne]</span><br>→ UTMs bleiben <b>UNVERÄNDERT</b> ✅</div>
+    <div class="step-arrow">↓</div>
+    <div class="step teal"><span class="label">📊 Tableau liest getrennt aus</span>utm_source=google → Paid Attribution<br>banner=inapp_x → CRM Touch<br>→ <b>Beide Kanäle korrekt!</b></div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="section-title">③ UTM Taxonomie – Übersicht</div>
+
+<table class="param-table">
+  <thead>
+    <tr>
+      <th>Kanal</th><th>utm_source</th><th>utm_medium</th><th>utm_campaign</th><th>Sonder-Parameter</th><th>Owner</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>📧 E-Mail</td><td class="mono">bloomreach</td><td class="mono">email</td><td class="mono">name_YYYYMMDD</td><td>—</td><td><span class="tag crm">CRM</span></td></tr>
+    <tr><td>🔔 App Push</td><td class="mono">bloomreach</td><td class="mono">push</td><td class="mono">name_YYYYMMDD</td><td>—</td><td><span class="tag crm">CRM</span></td></tr>
+    <tr><td>🔗 Deep Link</td><td class="mono">deeplink</td><td class="mono">organic_app</td><td class="mono">flow-name</td><td>—</td><td><span class="tag crm">CRM</span></td></tr>
+    <tr><td>💰 Google Ads</td><td class="mono">google</td><td class="mono">cpc</td><td class="mono">kampagne-name</td><td>—</td><td><span class="tag paid">Paid</span></td></tr>
+    <tr><td>💬 In-App Message</td><td class="mono" style="color:#6b7280">unverändert</td><td class="mono" style="color:#6b7280">unverändert</td><td class="mono" style="color:#6b7280">unverändert</td><td class="mono" style="color:#4ade80">banner=inapp_[name]</td><td><span class="tag new">NEU</span></td></tr>
+  </tbody>
+</table>
+
+<p style="text-align:center;color:#4b5563;font-size:11px;margin-top:40px;">
+  kfzteile24 GmbH · CRM & Analytics · April 2026
+</p>
+
+</body>
+</html>
